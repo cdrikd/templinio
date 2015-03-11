@@ -1,22 +1,11 @@
 // Templinio : Timeline using d3js
 // It's only a proof of concept
-//
 
 // Size of the timeline
 var w = 800;
 var h = 300;
 
-
-d3.json("example.json", function(json) {
-    console.log(json);  //Log output to console
-});
-
-var dataset = ["2015-02-16","2015-06-16","2015-04-02","2015-11-08","2015-08-25","2015-06-30",
-    "2015-09-02"];
-
-var tScale = d3.time.scale()
-       .domain([new Date("2015-01-01"), new Date("2015-12-31")])
-       .range([0,w]);
+var dataset;
 
 // Gestion de la langue française.
 var myFormatters = d3.locale({
@@ -46,55 +35,75 @@ var customTimeFormat = myFormatters.timeFormat.multi([
   ["%Y", function() { return true; }]
 ]);
 
-var xAxis = d3.svg.axis()
-  .scale(tScale)
-  .orient("bottom")
-  .tickFormat(customTimeFormat)
-  .ticks(8);
+d3.json("example.json", function(json) {
+    dataset = json;
+    console.log(json);  //Log output to console
 
-var svg = d3.select("#templinio-example1")
-    .append("svg")
-    .attr("width", w)
-    .attr("height", h);
+    generateTimeline();
 
-var zoom = d3.behavior.zoom()
-    .x(tScale)
-    .scaleExtent([1, 150])
-    .on("zoom", zoomed);
+});
 
-function transform(d) {
-    return "translate("+tScale(new Date(d))+", "+50+")"
+function generateTimeline() {
+    var tScale = d3.time.scale()
+        //.domain([new Date("2015-01-01"), new Date("2015-12-31")])
+        .domain([
+            new Date(d3.min(dataset, function(d) { return d.startDate; })),
+            new Date(d3.max(dataset, function(d) { return d.startDate; }))
+            ])
+        .range([0,w]);
+
+    var xAxis = d3.svg.axis()
+      .scale(tScale)
+      .orient("bottom")
+      .tickFormat(customTimeFormat)
+      .ticks(6);
+
+    var svg = d3.select("#templinio-example1")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h);
+
+    var zoom = d3.behavior.zoom()
+        .x(tScale)
+        .scaleExtent([0, 150])
+        .on("zoom", zoomed);
+
+    function transform(d) {
+        return "translate("+tScale(new Date(d.startDate)) + ", " + 50 + ")";
+    }
+
+    var newsvg = svg.append("g").call(zoom);
+
+    // Create a rectangle for all timeline to use mousse zoom
+    newsvg.append("rect")
+        .attr("width", w)
+        .attr("height", h);
+
+    newsvg.append("g")
+        .attr("class", "x axis")
+        .attr("transform","translate(0," + (h - 30) + ")")
+        .call(xAxis);
+
+    var essai = newsvg.selectAll("circle").data(dataset).enter().append("circle")
+            .attr("transform", transform)
+            .attr("r",5);
+
+    // TODO : le texte ne s'affiche pas
+    var txt = newsvg.selectAll("text.values").data(dataset).enter().append("text")
+        .text(function(d) {return d.title;})
+        .attr("transform", transform)
+        .attr("class", "values")
+        .attr("font-family", "sans-serif")
+        .attr("text-anchor", "middle")
+        .attr("font-size", "11px")
+        .attr("fill", "red");
+    console.log(txt);
+    function zoomed(d) {
+        svg.select(".x.axis").call(xAxis);
+        essai.attr("transform", transform);
+        txt.attr("transform", transform);
+    }
+
 }
 
-var newsvg = svg.append("g").call(zoom);
-
-// Create a rectangle for all timeline to use mousse zoom
-newsvg.append("rect")
-    .attr("width", w)
-    .attr("height", h);
-
-newsvg.append("g")
-    .attr("class", "x axis")
-    .attr("transform","translate(0," + (h - 30) + ")")
-    .call(xAxis);
-
-var essai = newsvg.selectAll("circle").data(dataset).enter().append("circle")
-        .attr("x", function(d){return tScale(d);})
-                .attr("y", function(){ return Math.random() * 400;})
-    .attr("transform", transform)
-    .attr("r",5);
-
-var txt = newsvg.selectAll("text").data(dataset).enter().append("text")
-    .text(function(d) {return d;})
-    .attr("x",function(d) { return tScale(new Date(d));})
-    .attr("y",40)
-    .attr("font-family", "sans-serif")
-    .attr("text-anchor", "middle")
-    .attr("font-size", "11px")
-    .attr("fill", "red");
-
-function zoomed(d) {
-    svg.select(".x.axis").call(xAxis);
-    essai.attr("transform", transform);
-}
 
