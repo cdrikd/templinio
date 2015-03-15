@@ -2,47 +2,43 @@
     {
         "title": "Example 1",
         "startDate": "2015-02-01",
-        "endDate" : "",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 2",
         "startDate": "2015-02-24",
-        "endDate" : "",
+        "endDate" : "2015-02-25",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 3",
-        "startDate": "2015-02-24",
-        "endDate" : "",
+        "startDate": "2015-02-26",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 4",
         "startDate": "2015-03-05",
-        "endDate" : "",
+        "endDate" : "2015-03-07",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 5",
         "startDate": "2015-03-08",
-        "endDate" : "",
+        "endDate" : "2015-03-12",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 6",
         "startDate": "2015-05-26",
-        "endDate" : "",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 7",
         "startDate": "2015-08-09",
-        "endDate" : "",
+        "endDate" : "2015-08-15",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 8",
         "startDate": "2015-09-18",
-        "endDate" : "",
+        "endDate" : "2015-09-19",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },{
         "title": "Example 9",
         "startDate": "2016-03-15",
-        "endDate" : "",
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     }
 ]

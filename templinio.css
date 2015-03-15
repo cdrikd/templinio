@@ -15,3 +15,9 @@ rect {
     font-size: 11px;
     fill: #606060;
 }
+
+rect.objperiod {
+    fill:#009688;
+    stroke:#009688;
+    stroke-width:1;
+}
