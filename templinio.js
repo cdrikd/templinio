@@ -4,6 +4,12 @@
 var w = 800;
 var h = 300;
 
+var paddingData = 5; // Padding entre les différentes dates et la hauteur
+var sizeLine = 20; // Taille en pixel des rond et rectancles ainsi que du texte
+// Nombre de lignes de dates possibles . Hauteur - axe - (padding haut et bas)
+var nbLine = Math.floor((h - 30 - (2 * paddingData)) / (sizeLine + paddingData));
+console.log(nbLine);
+
 var dataset;
 
 // Gestion de la langue française.
@@ -65,7 +71,8 @@ function generateTimeline() {
         .on("zoom", zoomed);
 
     function transform(d) {
-        return "translate("+tScale(new Date(d.startDate)) + ", " + 50 + ")";
+        // Test var calCY = Math.floor((Math.random() * nbLine) * (paddingData + sizeLine) + paddingData);
+        return "translate("+tScale(new Date(d.startDate)) + ")";
     }
 
     function transformDatesText(d) {
@@ -99,11 +106,10 @@ function generateTimeline() {
                 return "tdate tevent";
             }
         });
-
     var dates_events = newsvg.selectAll(".tdate").append("circle")
             .attr("transform", transform)
             .attr("fill","#CDDC39")
-            .attr("r",5);
+            .attr("r",sizeLine / 4);
 
     // Affichage des textes des dates
     var txt_dates_events = newsvg.selectAll(".tdate").append("text")
@@ -122,7 +128,7 @@ function generateTimeline() {
             return tScale(new Date(d.startDate));
         })
         .attr("y",100)
-        .attr("height",20)
+        .attr("height",sizeLine)
         .attr("width", function(d) {
             return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
         });
@@ -144,16 +150,27 @@ function generateTimeline() {
         dates_events.attr("transform", transform);
         txt_dates_events.attr("transform", transformDatesText);
 
-
         periods_events.attr("x", function(d) {
             return tScale(new Date(d.startDate));
         })
         .attr("width", function(d) {
             return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
         });
+        // Repositionne les legendes des periodes
         txt_periods_events.attr("transform", transformPeriodsText);
 
-
+        var currentLine = 0;
+        events.each(function(d,i) {
+            if (currentLine === 5) {
+                currentLine = 0;
+            }
+            var newY = paddingData + ((sizeLine + paddingData) * currentLine);
+            console.log(newY);
+            d3.select(this).select("text").attr("y", newY);
+            d3.select(this).select("circle").attr("y", newY);
+            d3.select(this).select("rect").attr("y", newY);
+            currentLine++;
+        });
     }
 }
 
