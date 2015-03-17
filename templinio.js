@@ -76,11 +76,11 @@ function generateTimeline() {
     }
 
     function transformDatesText(d) {
-        return "translate(" + (tScale(new Date(d.startDate))+8) + ", " + 50 + ")";
+        return "translate(" + (tScale(new Date(d.startDate))+8) + ")";
     }
 
     function transformPeriodsText(d) {
-        return "translate(" + (tScale(new Date(d.endDate))+8) + ", " + 110 + ")";
+        return "translate(" + (tScale(new Date(d.endDate))+8) + ")";
     }
 
     var newsvg = svg.append("g").call(zoom);
@@ -108,7 +108,7 @@ function generateTimeline() {
         });
     var dates_events = newsvg.selectAll(".tdate").append("circle")
             .attr("transform", transform)
-            .attr("fill","#CDDC39")
+            .attr("fill","#2196F3")
             .attr("r",sizeLine / 4);
 
     // Affichage des textes des dates
@@ -116,18 +116,15 @@ function generateTimeline() {
         .text(function(d) {return d.title;})
         .attr("transform", transformDatesText)
         .attr("class", "values")
-        .attr("font-family", "sans-serif")
         .attr("text-anchor", "left")
         .attr("alignment-baseline","middle")
-        .attr("font-size", "10px")
-        .attr("fill", "#827717");
+        .attr("fill", "#1565C0");
 
     var periods_events = newsvg.selectAll(".tperiod").append("rect")
         .attr("class","objperiod")
         .attr("x", function(d) {
             return tScale(new Date(d.startDate));
         })
-        .attr("y",100)
         .attr("height",sizeLine)
         .attr("width", function(d) {
             return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
@@ -138,12 +135,11 @@ function generateTimeline() {
         .text(function(d) {return d.title;})
         .attr("transform", transformPeriodsText)
         .attr("class", "values")
-        .attr("font-family", "sans-serif")
         .attr("text-anchor", "left")
         .attr("alignment-baseline","middle")
-        .attr("font-size", "10px")
-        .attr("fill", "#004D40");
+        .attr("fill", "#6A1B9A");
 
+    zoomed();
 
     function zoomed(d) {
         svg.select(".x.axis").call(xAxis);
@@ -161,14 +157,29 @@ function generateTimeline() {
 
         var currentLine = 0;
         events.each(function(d,i) {
-            if (currentLine === 5) {
+            if (currentLine === nbLine) {
                 currentLine = 0;
             }
             var newY = paddingData + ((sizeLine + paddingData) * currentLine);
             console.log(newY);
-            d3.select(this).select("text").attr("y", newY);
-            d3.select(this).select("circle").attr("y", newY);
-            d3.select(this).select("rect").attr("y", newY);
+
+            d3.select(this).select("text").attr("transform", function () {
+                 var transform = d3.transform(d3.select(this).attr("transform"));
+                 return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
+            });
+
+            d3.select(this).select("circle").attr("transform", function () {
+                 var transform = d3.transform(d3.select(this).attr("transform"));
+                 return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
+            });
+
+            d3.select(this).select("rect").attr("transform", function () {
+                 var transform = d3.transform(d3.select(this).attr("transform"));
+                 return "translate("+transform.translate[0]+", " + newY + ")";
+            });
+
+//            d3.select(this).select("circle").attr("transform", "translate(0," + newY + ")");
+  //          d3.select(this).select("rect").attr("transform", "translate(0," + newY + ")");
             currentLine++;
         });
     }

@@ -16,8 +16,11 @@ rect {
     fill: #606060;
 }
 
+.tevent text {
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+    font-size: 12px;
+}
+
 rect.objperiod {
-    fill:#009688;
-    stroke:#009688;
-    stroke-width:1;
+    fill:#9C27B0;
 }
