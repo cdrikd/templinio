@@ -8,7 +8,8 @@ var paddingData = 5; // Padding entre les différentes dates et la hauteur
 var sizeLine = 20; // Taille en pixel des rond et rectancles ainsi que du texte
 // Nombre de lignes de dates possibles . Hauteur - axe - (padding haut et bas)
 var nbLine = Math.floor((h - 30 - (2 * paddingData)) / (sizeLine + paddingData));
-console.log(nbLine);
+// Rayon des cercles pours les dates
+var circleRadius = 5;
 
 var dataset;
 
@@ -40,7 +41,8 @@ var customTimeFormat = myFormatters.timeFormat.multi([
     ["%Y", function() { return true; }]
 ]);
 
-d3.json("example.json", function(json) {
+// Url for 30 random data http://beta.json-generator.com/Mu0JFF9
+d3.json("http://beta.json-generator.com/api/json/get/Mu0JFF9", function(json) {
     dataset = json;
     generateTimeline();
 });
@@ -107,14 +109,14 @@ function generateTimeline() {
             }
         });
     var dates_events = newsvg.selectAll(".tdate").append("circle")
-            .attr("transform", transform)
+            .attr("transform", "translate(" + circleRadius + "," + (sizeLine / 2) + ")")
             .attr("fill","#2196F3")
-            .attr("r",sizeLine / 4);
+            .attr("r",circleRadius);
 
     // Affichage des textes des dates
     var txt_dates_events = newsvg.selectAll(".tdate").append("text")
         .text(function(d) {return d.title;})
-        .attr("transform", transformDatesText)
+        .attr("transform", "translate(" + (circleRadius * 3) + "," + (sizeLine / 2) + ")")
         .attr("class", "values")
         .attr("text-anchor", "left")
         .attr("alignment-baseline","middle")
@@ -122,9 +124,6 @@ function generateTimeline() {
 
     var periods_events = newsvg.selectAll(".tperiod").append("rect")
         .attr("class","objperiod")
-        .attr("x", function(d) {
-            return tScale(new Date(d.startDate));
-        })
         .attr("height",sizeLine)
         .attr("width", function(d) {
             return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
@@ -133,7 +132,9 @@ function generateTimeline() {
     // Affichage des textes des périodes
     var txt_periods_events = newsvg.selectAll(".tperiod").append("text")
         .text(function(d) {return d.title;})
-        .attr("transform", transformPeriodsText)
+        .attr("transform", function(d) {
+            return "translate(" + (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)) + (circleRadius)) + "," + (sizeLine / 2) + ")";
+        })
         .attr("class", "values")
         .attr("text-anchor", "left")
         .attr("alignment-baseline","middle")
@@ -143,6 +144,21 @@ function generateTimeline() {
 
     function zoomed(d) {
         svg.select(".x.axis").call(xAxis);
+        //Pour les cercle on eleve le rayon afin que le centre du cercle soit pile sur la date
+        newsvg.selectAll("g.tevent.tdate").attr("transform", function(d) {
+          return "translate(" + (tScale(new Date(d.startDate)) - circleRadius) + ")";
+        });
+        newsvg.selectAll("g.tevent.tperiod").attr("transform", function(d) {
+          return "translate(" + tScale(new Date(d.startDate)) + ")";
+        });
+        // On élargie / réduit les périodes en fonction du zoom
+        periods_events.attr("width", function(d) {
+            return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
+        });
+        txt_periods_events.attr("transform", function(d) {
+            return "translate(" + (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)) + (circleRadius)) + "," + (sizeLine / 2) + ")";
+        });
+       /*
         dates_events.attr("transform", transform);
         txt_dates_events.attr("transform", transformDatesText);
 
@@ -154,20 +170,20 @@ function generateTimeline() {
         });
         // Repositionne les legendes des periodes
         txt_periods_events.attr("transform", transformPeriodsText);
-
+*/
         var currentLine = 0;
         events.each(function(d,i) {
             if (currentLine === nbLine) {
                 currentLine = 0;
             }
             var newY = paddingData + ((sizeLine + paddingData) * currentLine);
-            console.log(newY);
 
-            d3.select(this).select("text").attr("transform", function () {
+
+            d3.select(this).attr("transform", function () {
                  var transform = d3.transform(d3.select(this).attr("transform"));
                  return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
             });
-
+/*
             d3.select(this).select("circle").attr("transform", function () {
                  var transform = d3.transform(d3.select(this).attr("transform"));
                  return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
@@ -176,7 +192,7 @@ function generateTimeline() {
             d3.select(this).select("rect").attr("transform", function () {
                  var transform = d3.transform(d3.select(this).attr("transform"));
                  return "translate("+transform.translate[0]+", " + newY + ")";
-            });
+            });*/
 
 //            d3.select(this).select("circle").attr("transform", "translate(0," + newY + ")");
   //          d3.select(this).select("rect").attr("transform", "translate(0," + newY + ")");
