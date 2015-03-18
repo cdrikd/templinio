@@ -42,7 +42,8 @@ var customTimeFormat = myFormatters.timeFormat.multi([
 ]);
 
 // Url for 30 random data http://beta.json-generator.com/Mu0JFF9
-d3.json("http://beta.json-generator.com/api/json/get/OOOGEOD", function(json) {
+// http://beta.json-generator.com/api/json/get/OOOGEOD   LQlLJHS AaTWszy
+d3.json("http://beta.json-generator.com/api/json/get/LQlLJHS", function(json) {
     dataset = json;
     // On trie les dates
     dataset.sort(function(a,b){
@@ -115,6 +116,8 @@ function generateTimeline() {
 
     var periods_events = newsvg.selectAll(".tperiod").append("rect")
         .attr("class","objperiod")
+        .attr("rx",5)
+        .attr("ry",5)
         .attr("height",sizeLine)
         .attr("width", function(d) {
             return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
@@ -133,14 +136,28 @@ function generateTimeline() {
 
     zoomed();
 
+    // Vérifie si les coordonnées de l'event rentre en collication avec un event déjà dessiné
+    function checkOverlap(positionnedEvent, coordEvent) {
+        var overlapFound = false;
+        positionnedEvent.forEach(function(elt, index, array) {
+                    // Test Overlap
+          if ((Math.max(coordEvent.minX,elt.minX) < Math.min(coordEvent.maxX,elt.maxX)) && (Math.max(coordEvent.minY,elt.minY) < Math.min(coordEvent.maxY,elt.maxY))) {
+              overlapFound = true;
+          }
+        });
+        return overlapFound
+    }
+
     function zoomed(d) {
         svg.select(".x.axis").call(xAxis);
         //Pour les cercle on eleve le rayon afin que le centre du cercle soit pile sur la date
         newsvg.selectAll("g.tevent.tdate").attr("transform", function(d) {
-          return "translate(" + (tScale(new Date(d.startDate)) - circleRadius) + ")";
+          var tr = d3.transform(d3.select(this).attr("transform")).translate;
+          return "translate(" + (tScale(new Date(d.startDate)) - circleRadius) + "," + tr[1] + ")";
         });
         newsvg.selectAll("g.tevent.tperiod").attr("transform", function(d) {
-          return "translate(" + tScale(new Date(d.startDate)) + ")";
+          var tr = d3.transform(d3.select(this).attr("transform")).translate;
+          return "translate(" + tScale(new Date(d.startDate)) + "," + tr[1] + ")";
         });
         // On élargie / réduit les périodes en fonction du zoom
         periods_events.attr("width", function(d) {
@@ -150,38 +167,86 @@ function generateTimeline() {
             return "translate(" + (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)) + (circleRadius)) + "," + (sizeLine / 2) + ")";
         });
 
-        var currentLine = 0;
-        var parsed = new Array();
+        //Tableau des coordonnées des évenements déjà correctement positionnés
+        var parsed = [];
+
         // Positionnement sur l'axe Y pour gérer les chevauchements
+        // Cela suppose que les données ait été triées et donc que les balises g soient dans
+        // l'ordre chronologique
         events.each(function(d,i) {
+
             // On calule le rectangle occupé par l'élément
             var tr = d3.transform(d3.select(this).attr("transform")).translate;
-            var minX = tr[0], minY = tr[1];
-            var maxX = this.getBBox().width + minX;
-            var maxY = this.getBBox().height + minY;
-
-            parsed.forEach(function(elt, index, array) {
-                // Test Overlap
-            });
-
-
-            parsed.push({minX: minX, maxX: maxX, minY: minY, maxY: maxY});
-
-
-            /*if (currentLine === nbLine) {
-                currentLine = 0;
+            var rectHeight = this.getBBox().height;
+            var coordEvent = {
+              minX : tr[0],
+              maxX : this.getBBox().width + tr[0],
+              minY : tr[1],
+              maxY : rectHeight + tr[1]
+            };
+            // Si il y a une collision on essai de le repositionner au plus haut
+            if (checkOverlap(parsed,coordEvent)) {
+                coordEvent.minY = 0;
+                coordEvent.maxY = rectHeight;
+                var collisionCorrected = false;
+                while(coordEvent.maxY <= h-30) {
+                    if (! checkOverlap(parsed,coordEvent)) {
+                        // Plus de collision, on sort
+                        collisionCorrected = true;
+                        break;
+                    } else {
+                        coordEvent.minY = coordEvent.minY + 10;
+                        coordEvent.maxY = coordEvent.minY + rectHeight;
+                    }
+                }
+                // Si la collision n'a pu être corrigé, on positionne tout en haut
+                if (! collisionCorrected) {
+                    coordEvent.minY = 50;
+                    coordEvent.maxY = coordEvent.minY + rectHeight;
+                }
             }
-            var newY = paddingData + ((sizeLine + paddingData) * currentLine);
-
-
-            d3.select(this).attr("transform", function () {
-                 var transform = d3.transform(d3.select(this).attr("transform"));
-                 return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
-            });
-            currentLine++;
+            /*
+                var initalY=coordEvent.minY;
+            var checkOverlap = true;
+            var boucle = false; // test si on a fait toutes les positions possibles
+            // TODO calculer vraiment la hauteur max
+            while (checkOverlap == true) {
+                var overlapFound = false;
+                parsed.forEach(function(elt, index, array) {
+                    // Test Overlap
+                    if ((Math.max(coordEvent.minX,elt.minX) < Math.min(coordEvent.maxX,elt.maxX)) && (Math.max(coordEvent.minY,elt.minY) < Math.min(coordEvent.maxY,elt.maxY))) {
+                        overlapFound = true;
+                        coordEvent.minY = elt.maxY + paddingData;
+                        coordEvent.maxY = rectHeight + coordEvent.minY;
+                        // si ca depasse on recommence au début
+                        if (coordEvent.maxY >= h-30) {
+                            coordEvent.minY = 0;
+                            coordEvent.maxY = rectHeight;
+                            boucle = true;
+                            console.log("boucle");
+                        }
+                    }
+                });
+                // si pas d'overlap on sort
+                if (! overlapFound) {
+                    checkOverlap = false;
+                }
+                // si overlap et qu'on a fait le  tour
+                if (overlapFound && boucle) {
+                    checkOverlap = false;
+                    coordEvent.minY = 0;
+                    coordEvent.maxY = rectHeight;
+                }
+            }
             */
+            parsed.push(coordEvent);
+            // On positionne correctement l'évènement
+            d3.select(this).attr("transform", function () {
+                 var transform = d3.transform(d3.select(this)
+                      .attr("transform"));
+                 return "translate("+transform.translate[0]+", " + coordEvent.minY + ")";
+            });
         });
-        console.log(parsed);
     }
 }
 
