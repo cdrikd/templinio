@@ -42,8 +42,12 @@ var customTimeFormat = myFormatters.timeFormat.multi([
 ]);
 
 // Url for 30 random data http://beta.json-generator.com/Mu0JFF9
-d3.json("http://beta.json-generator.com/api/json/get/Mu0JFF9", function(json) {
+d3.json("http://beta.json-generator.com/api/json/get/OOOGEOD", function(json) {
     dataset = json;
+    // On trie les dates
+    dataset.sort(function(a,b){
+      return new Date(a.startDate) - new Date(b.startDate);
+    });
     generateTimeline();
 });
 
@@ -71,19 +75,6 @@ function generateTimeline() {
         .x(tScale)
         .scaleExtent([0, 150])
         .on("zoom", zoomed);
-
-    function transform(d) {
-        // Test var calCY = Math.floor((Math.random() * nbLine) * (paddingData + sizeLine) + paddingData);
-        return "translate("+tScale(new Date(d.startDate)) + ")";
-    }
-
-    function transformDatesText(d) {
-        return "translate(" + (tScale(new Date(d.startDate))+8) + ")";
-    }
-
-    function transformPeriodsText(d) {
-        return "translate(" + (tScale(new Date(d.endDate))+8) + ")";
-    }
 
     var newsvg = svg.append("g").call(zoom);
 
@@ -158,22 +149,26 @@ function generateTimeline() {
         txt_periods_events.attr("transform", function(d) {
             return "translate(" + (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)) + (circleRadius)) + "," + (sizeLine / 2) + ")";
         });
-       /*
-        dates_events.attr("transform", transform);
-        txt_dates_events.attr("transform", transformDatesText);
 
-        periods_events.attr("x", function(d) {
-            return tScale(new Date(d.startDate));
-        })
-        .attr("width", function(d) {
-            return (tScale(new Date(d.endDate)) - tScale(new Date(d.startDate)));
-        });
-        // Repositionne les legendes des periodes
-        txt_periods_events.attr("transform", transformPeriodsText);
-*/
         var currentLine = 0;
+        var parsed = new Array();
+        // Positionnement sur l'axe Y pour gérer les chevauchements
         events.each(function(d,i) {
-            if (currentLine === nbLine) {
+            // On calule le rectangle occupé par l'élément
+            var tr = d3.transform(d3.select(this).attr("transform")).translate;
+            var minX = tr[0], minY = tr[1];
+            var maxX = this.getBBox().width + minX;
+            var maxY = this.getBBox().height + minY;
+
+            parsed.forEach(function(elt, index, array) {
+                // Test Overlap
+            });
+
+
+            parsed.push({minX: minX, maxX: maxX, minY: minY, maxY: maxY});
+
+
+            /*if (currentLine === nbLine) {
                 currentLine = 0;
             }
             var newY = paddingData + ((sizeLine + paddingData) * currentLine);
@@ -183,21 +178,10 @@ function generateTimeline() {
                  var transform = d3.transform(d3.select(this).attr("transform"));
                  return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
             });
-/*
-            d3.select(this).select("circle").attr("transform", function () {
-                 var transform = d3.transform(d3.select(this).attr("transform"));
-                 return "translate("+transform.translate[0]+", " + (newY + (sizeLine / 2)) + ")";
-            });
-
-            d3.select(this).select("rect").attr("transform", function () {
-                 var transform = d3.transform(d3.select(this).attr("transform"));
-                 return "translate("+transform.translate[0]+", " + newY + ")";
-            });*/
-
-//            d3.select(this).select("circle").attr("transform", "translate(0," + newY + ")");
-  //          d3.select(this).select("rect").attr("transform", "translate(0," + newY + ")");
             currentLine++;
+            */
         });
+        console.log(parsed);
     }
 }
 
