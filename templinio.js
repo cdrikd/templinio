@@ -43,7 +43,7 @@ var customTimeFormat = myFormatters.timeFormat.multi([
 
 // Url for 30 random data http://beta.json-generator.com/Mu0JFF9
 // http://beta.json-generator.com/api/json/get/OOOGEOD   LQlLJHS AaTWszy
-d3.json("http://beta.json-generator.com/api/json/get/LQlLJHS", function(json) {
+d3.json("http://beta.json-generator.com/api/json/get/OOOGEOD", function(json) {
     dataset = json;
     // On trie les dates
     dataset.sort(function(a,b){
@@ -149,6 +149,7 @@ function generateTimeline() {
     }
 
     function zoomed(d) {
+        console.log(zoom.translate());
         svg.select(".x.axis").call(xAxis);
         //Pour les cercle on eleve le rayon afin que le centre du cercle soit pile sur la date
         newsvg.selectAll("g.tevent.tdate").attr("transform", function(d) {
@@ -205,40 +206,7 @@ function generateTimeline() {
                     coordEvent.maxY = coordEvent.minY + rectHeight;
                 }
             }
-            /*
-                var initalY=coordEvent.minY;
-            var checkOverlap = true;
-            var boucle = false; // test si on a fait toutes les positions possibles
-            // TODO calculer vraiment la hauteur max
-            while (checkOverlap == true) {
-                var overlapFound = false;
-                parsed.forEach(function(elt, index, array) {
-                    // Test Overlap
-                    if ((Math.max(coordEvent.minX,elt.minX) < Math.min(coordEvent.maxX,elt.maxX)) && (Math.max(coordEvent.minY,elt.minY) < Math.min(coordEvent.maxY,elt.maxY))) {
-                        overlapFound = true;
-                        coordEvent.minY = elt.maxY + paddingData;
-                        coordEvent.maxY = rectHeight + coordEvent.minY;
-                        // si ca depasse on recommence au début
-                        if (coordEvent.maxY >= h-30) {
-                            coordEvent.minY = 0;
-                            coordEvent.maxY = rectHeight;
-                            boucle = true;
-                            console.log("boucle");
-                        }
-                    }
-                });
-                // si pas d'overlap on sort
-                if (! overlapFound) {
-                    checkOverlap = false;
-                }
-                // si overlap et qu'on a fait le  tour
-                if (overlapFound && boucle) {
-                    checkOverlap = false;
-                    coordEvent.minY = 0;
-                    coordEvent.maxY = rectHeight;
-                }
-            }
-            */
+
             parsed.push(coordEvent);
             // On positionne correctement l'évènement
             d3.select(this).attr("transform", function () {
