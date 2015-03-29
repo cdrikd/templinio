@@ -1,5 +1,7 @@
 /* Templinio CSS file */
 
+
+
 .axis path,
 .axis line {
     fill: none;
@@ -7,9 +9,6 @@
     shape-rendering: crispEdges;
 }
 
-rect {
-  fill: #fff;
-}
 .axis text {
     font-family: sans-serif;
     font-size: 11px;
@@ -23,4 +22,17 @@ rect {
 
 rect.objperiod {
     fill:#9C27B0;
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 100px;
+  height: 28px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
 }

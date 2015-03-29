@@ -1,16 +1,57 @@
-// Templinio : Timeline using d3js
-// It's only a proof of concept
-//
+/***
+ * Templinio - Javascript Timeline
+ * https://github.com/cdrikd/templinio
+ *
+ * Copyright 2015, Cédric DIRAND
+ *
+ * Released under the MIT license - http://opensource.org/licenses/MIT
+ ***/
+
+
+var Templinio = Templinio || {};
+
+Templinio.createTimeline = function(options) {
+
+    return new function() {
+        this.title = options.title;
+        this.subtitle = "Timenline based on d3js";
+        console.log(options);
+    };
+};
+
+Templinio.Event = function () {
+    this.startDate = "";
+
+    var y="";
+
+    this.getPrivate = function() {
+        console.log(y);
+    };
+
+    this.setPrivate = function(newVar) {
+        y=newVar;
+    };
+};
+
+var toto = new Templinio.Event();
+var tutu = new Templinio.Event();
+
+tutu.startDate = "rrr";
+tutu.setPrivate("ee");
+tutu.getPrivate();
+toto.getPrivate();
+
 
 // Size of the timeline
 var w = 800;
-var h = 150;
+var h = 300;
 
 var paddingData = 5; // Padding entre les différentes dates et la hauteur
 var sizeLine = 20; // Taille en pixel des rond et rectancles ainsi que du texte
+var paddingXaxis = 60; // Padding du bas pour l'axe X
 
 // Nombre de lignes de dates possibles . Hauteur - axe - (padding haut et bas)
-var nbLine = Math.floor((h - 30 - (2 * paddingData)) / (sizeLine + paddingData));
+//var nbLine = Math.floor((h - paddingXaxis - (2 * paddingData)) / (sizeLine + paddingData));
 
 // Rayon des cercles pours les dates
 var circleRadius = 5;
@@ -78,19 +119,27 @@ function generateTimeline() {
 
     var zoom = d3.behavior.zoom()
         .x(tScale)
-        .scaleExtent([0, 150])
+        .scaleExtent([0, 9000])
         .on("zoom", zoomed);
 
-    var newsvg = svg.append("g").call(zoom);
+    // On désactive le double click
+    var newsvg = svg.append("g").call(zoom).on("dblclick.zoom", null);
+
+    // On prépare un div pour les tooltips
+    var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
 
     // Create a rectangle for all timeline to use mousse zoom
     newsvg.append("rect")
         .attr("width", w)
-        .attr("height", h);
+        .attr("fill", "#fff")
+        .attr("height", h-paddingXaxis);
+
 
     newsvg.append("g")
         .attr("class", "x axis")
-        .attr("transform","translate(0," + (h - 30) + ")")
+        .attr("transform","translate(0," + (h - paddingXaxis) + ")")
         .call(xAxis);
 
     // On ajoute des balise g pour les futures évènements en leur positionnant
@@ -103,7 +152,28 @@ function generateTimeline() {
             } else {
                 return "tdate tevent";
             }
+        })
+        .on("mouseover", function(d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", "0.9");
+            var tr = d3.transform(d3.select(this).attr("transform")).translate;
+            var txtTooltip;
+            if(d.hasOwnProperty("endDate") && (0 !== d.endDate.length)) {
+                txtToolip = "Du " + d.startDate + " au " + d.endDate;
+            } else {
+                txtToolip = "Le " + d.startDate;
+            }
+            div.html(txtToolip)
+                .style("left", (tr[0] + (this.getBBox().width / 2)) + "px")
+                .style("top", (tr[1] + this.getBBox().height) + "px");
+            })
+        .on("mouseout", function(d) {
+            div.transition()
+                .duration(500)
+                .style("opacity", 0);
         });
+
     var dates_events = newsvg.selectAll(".tdate").append("circle")
         .attr("transform", "translate(" + circleRadius + "," + (sizeLine / 2) + ")")
         .attr("fill","#2196F3")
@@ -138,6 +208,87 @@ function generateTimeline() {
         .attr("alignment-baseline","middle")
         .attr("fill", "#6A1B9A");
 
+    // Zoom panel
+    newsvg.append("g").append("rect")
+        .attr("width", "90")
+        .attr("height", "30")
+        .attr("fill", "#fff")
+        .attr("rx", "2")
+        .attr("ry", "2")
+        .attr("stroke","#606060")
+        .attr("stroke-width","0.5")
+        .attr("transform","translate(25,"+ (h-35) +")");
+
+    // Zoom +
+    var zoomMore = newsvg.append("g")
+        .attr("transform","translate(30,"+ (h-30) +")");
+    zoomMore.append("rect")
+        .attr("width", "20")
+        .attr("height", "20")
+        .attr("opacity","0");
+    zoomMore.append("path")
+        .attr("d","M 46.599,46.599c-1.758,1.758-4.605,1.758-6.363,0.00l-10.548-10.545 C 26.718,37.89, 23.25,39.00, 19.50,39.00C 8.73,39.00,0.00,30.27,0.00,19.50S 8.73,0.00, 19.50,0.00S 39.00,8.73, 39.00,19.50c0.00,3.75-1.11,7.218-2.943,10.191l 10.545,10.545 C 48.357,41.994, 48.357,44.841, 46.599,46.599z M 19.50,6.00C 12.045,6.00, 6.00,12.045, 6.00,19.50S 12.045,33.00, 19.50,33.00S 33.00,26.955, 33.00,19.50S 26.955,6.00, 19.50,6.00z M 21.00,27.00L18.00,27.00 L18.00,21.00 L12.00,21.00 L12.00,18.00 l6.00,0.00 L18.00,12.00 l3.00,0.00 l0.00,6.00 l6.00,0.00 l0.00,3.00 L21.00,21.00 L21.00,27.00 z")
+        .attr("transform","scale(0.4)") // 20px
+        .attr("fill","#606060");
+    zoomMore.on("mouseover", function(d) {
+            d3.select(this).selectAll("path").attr("fill","#000000");
+        })
+        .on("mouseout", function(d) {
+            d3.select(this).selectAll("path").attr("fill","#606060");
+        })
+        .on("click",function() {
+            var newX = ((zoom.translate()[0] - (w / 2)) * 1.1) + w / 2;
+            var newY = ((zoom.translate()[1] - (h / 2)) * 1.1) + h / 2;
+            zoom.scale(zoom.scale() * 1.1).translate([newX,newY]);
+            zoom.event(newsvg);
+        });
+
+    // Zoom -
+    var zoomLess = newsvg.append("g")
+        .attr("transform","translate(60,"+ (h-30) +")");
+    zoomLess.append("rect")
+        .attr("width", "20")
+        .attr("height", "20")
+        .attr("opacity","0");
+    zoomLess.append("path")
+        .attr("d","M 46.599,46.599c-1.758,1.758-4.605,1.758-6.363,0.00l-10.548-10.545 C 26.718,37.89, 23.25,39.00, 19.50,39.00C 8.73,39.00,0.00,30.27,0.00,19.50S 8.73,0.00, 19.50,0.00S 39.00,8.73, 39.00,19.50c0.00,3.75-1.11,7.218-2.943,10.191l 10.545,10.545 C 48.357,41.994, 48.357,44.841, 46.599,46.599z M 19.50,6.00C 12.045,6.00, 6.00,12.045, 6.00,19.50S 12.045,33.00, 19.50,33.00S 33.00,26.955, 33.00,19.50S 26.955,6.00, 19.50,6.00z M 27.00,18.00l0.00,3.00 L12.00,21.00 L12.00,18.00 L27.00,18.00 z")
+        .attr("transform","scale(0.4)")
+        .attr("fill","#606060");
+    zoomLess.on("mouseover", function(d) {
+            d3.select(this).selectAll("path").attr("fill","#000000");
+        })
+        .on("mouseout", function(d) {
+            d3.select(this).selectAll("path").attr("fill","#606060");
+        })
+        .on("click",function() {
+            var newX = ((zoom.translate()[0] - (w / 2)) * 0.9) + w / 2;
+            var newY = ((zoom.translate()[1] - (h / 2)) * 0.9) + h / 2;
+            zoom.scale(zoom.scale() * 0.9).translate([newX,newY]);
+            zoom.event(newsvg);
+        });
+
+    // Reinit of zoom
+    var zoomReset = newsvg.append("g")
+        .attr("transform","translate(90,"+ (h-30) +")");
+    zoomReset.append("rect")
+        .attr("width", "20")
+        .attr("height", "20")
+        .attr("opacity","0");
+    zoomReset.append("path")
+        .attr("d","M 43.953,42.00c-2.472-6.987-9.12-12.00-16.953-12.00l0.00,6.00 c0.00,1.107-0.609,2.121-1.584,2.646 c-0.975,0.522-2.16,0.465-3.078-0.15l-18.00-12.00C 3.501,25.938, 3.00,25.002, 3.00,24.00s 0.501-1.938, 1.335-2.496l 18.00-12.00c 0.921-0.612, 2.103-0.672, 3.078-0.15 S 27.00,10.893, 27.00,12.00l0.00,6.00 c 9.939,0.00, 18.00,8.061, 18.00,18.00C 45.00,38.106, 44.619,40.122, 43.953,42.00z")
+        .attr("transform","scale(0.4)")
+        .attr("fill","#606060");
+    zoomReset.on("mouseover", function(d) {
+            d3.select(this).selectAll("path").attr("fill","#000000");
+        })
+        .on("mouseout", function(d) {
+            d3.select(this).selectAll("path").attr("fill","#606060");
+        })
+        .on("click",function() {
+            zoom.scale(1).translate([0,0]);
+            zoom.event(newsvg);
+        });
+
     // Historise le zoom pour voir si on est en scroll ou zoom. On met a zero au début pour
     // pouvoir exécute le repositionnement vertical
     var lastZoom = 0;
@@ -153,11 +304,11 @@ function generateTimeline() {
                 overlapFound = true;
             }
         });
-        return overlapFound
+        return overlapFound;
     }
 
     function zoomed(d) {
-        console.log("debut");
+        div.style("opacity", 0);
         svg.select(".x.axis").call(xAxis);
         //Pour les cercle on eleve le rayon afin que le centre du cercle soit pile sur la date
         newsvg.selectAll("g.tevent.tdate").attr("transform", function(d) {
@@ -208,7 +359,7 @@ function generateTimeline() {
                     coordEvent.minY = 0;
                     coordEvent.maxY = rectHeight;
                     var collisionCorrected = false;
-                    while(coordEvent.maxY <= (h - 30 - paddingData)) {
+                    while(coordEvent.maxY <= (h - paddingXaxis - paddingData)) {
                         if (! checkOverlap(parsed,coordEvent)) {
                             // Plus de collision, on sort
                             collisionCorrected = true;
@@ -222,7 +373,7 @@ function generateTimeline() {
                     // l'axe x pour montrer qu'il y a d'autres valeurs et on rend invisible
                     // la pastille et le texte
                     if (! collisionCorrected) {
-                        coordEvent.minY = h-30;
+                        coordEvent.minY = h-paddingXaxis;
                         coordEvent.maxY = coordEvent.minY + rectHeight;
                         minimizeEvent = true;
                     } else {
@@ -279,7 +430,5 @@ function generateTimeline() {
             });
         }
         lastZoom = zoom.scale();
-        console.log("fin");
     }
 }
-
