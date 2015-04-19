@@ -8,45 +8,47 @@
  ***/
 
 
+/*
+options :
+
+{
+    title : 'title of the timeline'
+    data : 'url of json'
+}
+ */
+
 var Templinio = Templinio || {};
 
-Templinio.createTimeline = function(options) {
+Templinio = function(options) {
+    //var privtevar = "";
 
-    return new function() {
-        this.title = options.title;
-        this.subtitle = "Timenline based on d3js";
-        console.log(options);
-    };
+    this.title = options.title;
+
+    // Sort data
+    this.data = options.data.sort(function(a,b){
+        return new Date(a.startDate) - new Date(b.startDate);
+    });;
+
+
 };
 
-Templinio.Event = function () {
-    this.startDate = "";
-
-    var y="";
-
-    this.getPrivate = function() {
-        console.log(y);
-    };
-
-    this.setPrivate = function(newVar) {
-        y=newVar;
-    };
-};
-
-var toto = new Templinio.Event();
-var tutu = new Templinio.Event();
-
-tutu.startDate = "rrr";
-tutu.setPrivate("ee");
-tutu.getPrivate();
-toto.getPrivate();
+// Url for 30 random data http://beta.json-generator.com/Mu0JFF9
+// http://beta.json-generator.com/api/json/get/OOOGEOD   LQlLJHS AaTWszy DUJCqzc
+d3.json("example.json", function(json) {
+    var a = new Templinio(
+        {
+            title: "Fist Timeline",
+            data: json
+        });
+    console.log(a);
+});
 
 
 // Size of the timeline
-var w = 800;
-var h = 300;
+var w = 1000;
+var h = 500;
 
-var paddingData = 5; // Padding entre les différentes dates et la hauteur
+var paddingData = 10; // Padding entre les différentes dates et la hauteur
 var sizeLine = 20; // Taille en pixel des rond et rectancles ainsi que du texte
 var paddingXaxis = 60; // Padding du bas pour l'axe X
 
@@ -86,9 +88,9 @@ var customTimeFormat = myFormatters.timeFormat.multi([
     ["%Y", function() { return true; }]
 ]);
 
-// Url for 30 random data http://beta.json-generator.com/Mu0JFF9
+// Url for 30 random data http://beta.json-generator.com/Bq2g-9g
 // http://beta.json-generator.com/api/json/get/OOOGEOD   LQlLJHS AaTWszy DUJCqzc
-d3.json("http://beta.json-generator.com/api/json/get/OOOGEOD", function(json) {
+d3.json("example.json", function(json) {
     dataset = json;
     // On trie les dates
     dataset.sort(function(a,b){
@@ -421,11 +423,16 @@ function generateTimeline() {
                         .attr("opacity","1");
                     d3.selectAll(this.childNodes).attr("opacity","1");
                 } else {
+                    var transform = d3.transform(d3.select(this).attr("transform"));
                     // On positionne correctement l'évènement
                     d3.select(this).attr("transform", function () {
+
                         var transform = d3.transform(d3.select(this).attr("transform"));
                         return "translate("+transform.translate[0]+", " + coordEvent.minY + ")";
-                    });
+                    })
+                     // d3.select(this).append("line").attr("x1",transform.translate[0])
+                     //    .attr("y1",coordEvent.minY).attr("x2",transform.translate[0])
+                     //    .attr("y2",h-30).attr("style","stroke:rgb(255,0,0);stroke-width:2");
                 }
             });
         }

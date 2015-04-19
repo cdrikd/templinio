@@ -16,7 +16,8 @@
 }
 
 .tevent text {
-    font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+    /*font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;*/
+    font-family: 'Droid Serif', serif;
     font-size: 12px;
 }
 
