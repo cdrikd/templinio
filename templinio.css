@@ -25,6 +25,12 @@ rect.objperiod {
     fill:#9C27B0;
 }
 
+rect.zoomBox {
+    fill: #fff;
+    stroke: #606060;
+    stroke-width: 0.5;
+}
+
 div.tooltip {
   position: absolute;
   text-align: center;

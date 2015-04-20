@@ -22,26 +22,24 @@ var Templinio = Templinio || {};
 Templinio = function(options) {
     //var privtevar = "";
 
-    this.title = options.title;
+    this.title = options.title || "";
 
-    // Sort data
-    this.data = options.data.sort(function(a,b){
-        return new Date(a.startDate) - new Date(b.startDate);
-    });;
-
-
+    d3.json(options.data, function(json) {
+        var dataset = json.sort(function(a,b){
+            return new Date(a.startDate) - new Date(b.startDate);
+        });
+        generateTimeline(dataset);
+    });
 };
 
-// Url for 30 random data http://beta.json-generator.com/Mu0JFF9
-// http://beta.json-generator.com/api/json/get/OOOGEOD   LQlLJHS AaTWszy DUJCqzc
-d3.json("example.json", function(json) {
-    var a = new Templinio(
-        {
-            title: "Fist Timeline",
-            data: json
-        });
-    console.log(a);
-});
+
+var toOptions = {
+    title: "Fist Timeline",
+    data: "example.json"
+};
+
+Templinio(toOptions);
+
 
 
 // Size of the timeline
@@ -96,10 +94,10 @@ d3.json("example.json", function(json) {
     dataset.sort(function(a,b){
         return new Date(a.startDate) - new Date(b.startDate);
     });
-    generateTimeline();
+    //generateTimeline(dataset);
 });
 
-function generateTimeline() {
+function generateTimeline(dataset) {
     var tScale = d3.time.scale()
         //.domain([new Date("2015-01-01"), new Date("2015-12-31")])
         .domain([
@@ -210,16 +208,21 @@ function generateTimeline() {
         .attr("alignment-baseline","middle")
         .attr("fill", "#6A1B9A");
 
-    // Zoom panel
-    newsvg.append("g").append("rect")
-        .attr("width", "90")
-        .attr("height", "30")
-        .attr("fill", "#fff")
-        .attr("rx", "2")
-        .attr("ry", "2")
-        .attr("stroke","#606060")
-        .attr("stroke-width","0.5")
-        .attr("transform","translate(25,"+ (h-35) +")");
+    var zoomBox = function (selection) {
+        var zoomB = selection.append("g").append("rect")
+            .attr("width", "90")
+            .attr("height", "30")
+            .attr("class", "zoomBox")
+            .attr("rx", "2")
+            .attr("ry", "2");
+
+
+
+        return zoomB;
+    };
+
+    zoomBox(newsvg).attr("transform","translate(25,"+ (h-35) +")");
+
 
     // Zoom +
     var zoomMore = newsvg.append("g")
