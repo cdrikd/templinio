@@ -10,9 +10,22 @@
 <p>Example of Templinio Timeline</p>
 <p>
     <div id="templinio-example1"></div>
-    <div id="templinio-example2"></div>
 </p>
 <script type="text/javascript" src="templinio.js" charset="utf-8"></script>
+<script type="text/javascript">
+    var toOptions = {
+        title: "My first Timeline",
+        data: "example.json",
+        container: "templinio-example1",
+        timeline : {
+            width: "800",
+            height: "500"
+        }
+    };
+
+    var a = Templinio(toOptions);
+</script>
+
 
 </body>
 </html>

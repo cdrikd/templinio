@@ -15,6 +15,14 @@
     fill: #606060;
 }
 
+
+.templinioTitle {
+    font-family: sans-serif;
+    font-size: 16px;
+    fill: #252525;
+    text-anchor: middle;
+}
+
 .tevent text {
     /*font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;*/
     font-family: 'Droid Serif', serif;
